@@ -1,4 +1,4 @@
-import-module "$env:CamPSModulePath\dbatools\dbatools.psm1"
+import-module dbatools
 
 If (Get-Cluster){
     $clusterName = (Get-Cluster).Name
@@ -8,4 +8,6 @@ If (Get-Cluster){
     exit
 }
 
-#Sync-DbaAvailabilityGroup -Primary $clusterName -Secondary | Out-Null
+foreach ($curAvailabilityGroup in (Get-DbaAvailabilityGroup -SqlInstance $clusterName | Where-Object {$_.PrimaryReplica -eq $ENV:COMPUTERNAME})){
+    Sync-DbaAvailabilityGroup -Primary $ENV:COMPUTERNAME -AvailabilityGroup $curAvailabilityGroup.AvailabilityGroup -WhatIf
+}
